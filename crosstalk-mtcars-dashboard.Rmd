@@ -3,9 +3,8 @@ title: "MTCars Dashboard"
 output: 
   flexdashboard::flex_dashboard:
     theme:
-      bg: "#101010"
-      fg: "#FDF7F7" 
-      primary: "#ED79F9"
+      version: 3
+      bootswatch: flatly
       base_font:
         google: Prompt
       code_font:
@@ -24,20 +23,33 @@ library(d3scatter)
 library(summarywidget)
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+mtCarsSD <- mtcars |> 
+  mutate(cyl = factor(cyl)) |> 
+  SharedData$new()
+
 ```
 
 Column {data-width=650 .tabset}
 -----------------------------------------------------------------------
 
-### Chart A
+### Fuel Mileage
 
 ```{r}
+
+mtCarsSD |> 
+  plot_ly(x=~hp, y=~mpg, color=~cyl) |> 
+  layout(xaxis=list(title="Horsepower"),
+         yaxis=list(title="Miles per Gallon"),
+         legend=list(title=list(text="Cyl.")))
 
 ```
 
 ### Chart B
 
 ```{r}
+
+
 
 ```
 
@@ -48,11 +60,15 @@ Column {data-width=350}
 
 ```{r}
 
+filter_checkbox("cyl", "Cylinders", mtCarsSD, ~cyl, inline=T)
+filter_checkbox("am", "Automatic", mtCarsSD, ~am, inline = T)
 ```
 
 ### Chart D
 
 ```{r}
+
+datatable(mtCarsSD)
 
 ```
 
