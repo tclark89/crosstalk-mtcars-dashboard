@@ -11,6 +11,8 @@ output:
         google: JetBrains Mono
     orientation: columns
     vertical_layout: fill
+    source_code: https://github.com/tclark89/crosstalk-mtcars-dashboard
+    
 ---
 
 ```{r setup, include=FALSE}
@@ -90,9 +92,32 @@ plotTrans <- mtCarsSD |>
           text=~paste0(model)) |> 
   layout(xaxis=list(title="Transmission"))
 
-subplot(plotCyl, plotTrans, titleX=T) |> 
+plotVs <- mtCarsSD |> 
+  plot_ly(x=~vs, y=~mpg,  
+          type="box", boxpoints="all", pointpos=0,
+          marker = list(size=12, line=list(width=2, color="black")),
+          colors = "Set2",
+          text=~paste0(model)) |> 
+  layout(xaxis=list(title="Engine Shape"))
+
+plotGear <- mtCarsSD |> 
+  plot_ly(x=~gear, y=~mpg,  
+          type="box", boxpoints="all", pointpos=0,
+          marker = list(size=12, line=list(width=2, color="black")),
+          colors = "Set2",
+          text=~paste0(model)) |> 
+  layout(xaxis=list(title="Num. of Gears"))
+
+subplot(
+  subplot(plotCyl, plotTrans, titleX=T) |> 
   layout(yaxis=list(title="Miles per Gallon")) |> 
-  hide_legend()
+  hide_legend(),
+
+subplot(plotVs, plotGear, titleX=T) |> 
+  layout(yaxis=list(title="Miles per Gallon")) |> 
+  hide_legend(),
+nrows=2, titleY = T, titleX=T, margin = c(0,0,0,0.1)
+)
 
 ```
 
