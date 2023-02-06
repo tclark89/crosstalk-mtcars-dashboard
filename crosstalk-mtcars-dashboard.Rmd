@@ -25,7 +25,10 @@ library(summarywidget)
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 mtCarsSD <- mtcars |> 
-  mutate(cyl = factor(cyl)) |> 
+  rownames_to_column(var = "model") |> 
+  mutate(cyl = factor(cyl),
+         vs = if_else(vs == 0, "V-Shaped", "Inline"),
+         am = if_else(am == 0, "Automatic", "Manual")) |> 
   SharedData$new()
 
 ```
@@ -33,19 +36,67 @@ mtCarsSD <- mtcars |>
 Column {data-width=650 .tabset}
 -----------------------------------------------------------------------
 
-### Fuel Mileage Chart
+### Fuel Mileage by Horsepower
 
 ```{r}
 
 mtCarsSD |> 
-  plot_ly(x=~hp, y=~mpg, color=~cyl) |> 
+  plot_ly(x=~hp, y=~mpg, color=~cyl, 
+          type="scatter", mode="markers", 
+          marker = list(size=12,
+                        line=list(width=2, color="black")),
+          colors = "Set2",
+          text=~paste0(model, "<br>", disp, " cu. in.<br>", gear, " gears")) |> 
   layout(xaxis=list(title="Horsepower"),
          yaxis=list(title="Miles per Gallon"),
          legend=list(title=list(text="Cyl.")))
 
 ```
 
-### Fuel Mileage Table
+### Fuel Mileage by Displacement
+
+```{r}
+
+mtCarsSD |> 
+  plot_ly(x=~disp, y=~mpg, color=~cyl, 
+          type="scatter", mode="markers", 
+          marker = list(size=12,
+                        line=list(width=2, color="black")),
+          colors = "Set2",
+          text=~paste0(model, "<br>", hp, " HP<br>", gear, " gears")) |> 
+  layout(xaxis=list(title="Displacement (cu. in.)"),
+         yaxis=list(title="Miles per Gallon"),
+         legend=list(title=list(text="Cyl.")))
+
+```
+
+### Boxplots
+```{r}
+
+plotCyl <- mtCarsSD |> 
+  plot_ly(x=~cyl, y=~mpg,  
+          type="box", boxpoints="all", pointpos=0,
+          marker = list(size=12, line=list(width=2, color="black")),
+          colors = "Set2",
+          text=~paste0(model)) |> 
+  layout(xaxis=list(title="Cylinders"))
+
+
+plotTrans <- mtCarsSD |> 
+  plot_ly(x=~am, y=~mpg,  
+          type="box", boxpoints="all", pointpos=0,
+          marker = list(size=12, line=list(width=2, color="black")),
+          colors = "Set2",
+          text=~paste0(model)) |> 
+  layout(xaxis=list(title="Transmission"))
+
+subplot(plotCyl, plotTrans, titleX=T) |> 
+  layout(yaxis=list(title="Miles per Gallon")) |> 
+  hide_legend()
+
+```
+
+### Data Table
 
 ```{r}
 
@@ -62,12 +113,20 @@ Column {data-width=350}
 
 filter_checkbox("cyl", "Cylinders", mtCarsSD, ~cyl, inline=T)
 filter_checkbox("am", "Automatic", mtCarsSD, ~am, inline = T)
+filter_checkbox("gear", "Num. of Gears", mtCarsSD, ~gear, inline = T)
+filter_checkbox("vs", "Engine Shape", mtCarsSD, ~vs, inline = T)
+filter_slider("disp", "Displacement", mtCarsSD, ~disp)
 ```
 
 ### Summary
 
-Of the `r summarywidget(mtCarsSD, "count")` cars:
+Of the **`r summarywidget(mtCarsSD, "count")`** cars:
 
-  - `r summarywidget(mtCarsSD, "count", selection=~am==1)` are Automatic
-  - `r summarywidget(mtCarsSD, "count", selection=~am==0)` are Manual
+  - **`r summarywidget(mtCarsSD, "count", selection=~am=="Automatic")`** are Automatic
+  - **`r summarywidget(mtCarsSD, "count", selection=~am=="Manual")`** are Manual
 
+The average fuel mileage is:
+
+ - All selected cars: **`r summarywidget(mtCarsSD, "mean", "mpg")`** MPG
+ - Automatic cars: **`r summarywidget(mtCarsSD, "mean", selection=~am=="Automatic", "mpg")`** MPG 
+ - Manual cars: **`r summarywidget(mtCarsSD, "mean", selection=~am=="Manual", "mpg")`** MPG
