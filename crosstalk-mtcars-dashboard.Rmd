@@ -19,7 +19,7 @@ library(tidyverse)
 library(crosstalk)
 library(DT)
 library(plotly)
-library(d3scatter)
+# library(d3scatter)
 library(summarywidget)
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -33,7 +33,7 @@ mtCarsSD <- mtcars |>
 Column {data-width=650 .tabset}
 -----------------------------------------------------------------------
 
-### Fuel Mileage
+### Fuel Mileage Chart
 
 ```{r}
 
@@ -45,18 +45,18 @@ mtCarsSD |>
 
 ```
 
-### Chart B
+### Fuel Mileage Table
 
 ```{r}
 
-
+datatable(mtCarsSD)
 
 ```
 
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Chart C
+### Filters
 
 ```{r}
 
@@ -64,11 +64,10 @@ filter_checkbox("cyl", "Cylinders", mtCarsSD, ~cyl, inline=T)
 filter_checkbox("am", "Automatic", mtCarsSD, ~am, inline = T)
 ```
 
-### Chart D
+### Summary
 
-```{r}
+Of the `r summarywidget(mtCarsSD, "count")` cars:
 
-datatable(mtCarsSD)
-
-```
+  - `r summarywidget(mtCarsSD, "count", selection=~am==1)` are Automatic
+  - `r summarywidget(mtCarsSD, "count", selection=~am==0)` are Manual
 
